@@ -12,13 +12,14 @@
  *  Copyright (c) 2002	Kyle Harris <kharris@nexus-tech.net>
  */
 
-#include <config.h>
+#include <config.h>	/*头文件，实际包含的是include/configs/sunxi-common.h*/
 
 /*
  * A macro to allow insertion of an ARM exception vector either
  * for the non-boot0 case or by a boot0-header.
+ *	允许插入ARM异常向量的宏对于非boot0情况或boot0-header。
  */
-        .macro ARM_VECTORS
+        .macro ARM_VECTORS  /*_start 会调用到ARM_VECTORS设置异常向量表*/
 #ifdef CONFIG_ARCH_K3
 	ldr     pc, _reset
 #else
@@ -38,7 +39,7 @@
  *************************************************************************
  *
  * Symbol _start is referenced elsewhere, so make it global
- *
+ *	符号_start在别处引用，因此将其设为全局
  *************************************************************************
  */
 
@@ -48,7 +49,7 @@
  *************************************************************************
  *
  * Vectors have their own section so linker script can map them easily
- *
+ * 向量有自己的部分，因此链接描述文件可以轻松映射它们
  *************************************************************************
  */
 
@@ -66,6 +67,13 @@
  * by the boot0 hook.  The requirements for a boot0 hook thus are:
  *   (1) defines '_start:' as appropriate
  *   (2) inserts the vector table using ARM_VECTORS as appropriate
+ *	各种SoC需要一些特殊的，特别是SoC特定的要启动，允许他们在boot0.h文件中设置它然后在这里使用它。
+ *  允许boot0挂钩在向量之后插入“特殊”序列
+ *  table（例如对于socfpga），boot0钩子的存在
+ *  下面的向量表并假设填充了向量表
+ *  通过boot0钩子。 因此boot0挂钩的要求是：
+ *    （1）酌情定义'_start：'
+ *    （2）根据需要使用ARM_VECTORS插入向量表
  */
 #include <asm/arch/boot0.h>
 
@@ -85,7 +93,7 @@ _start:
 #ifdef CONFIG_SYS_DV_NOR_BOOT_CFG
 	.word	CONFIG_SYS_DV_NOR_BOOT_CFG
 #endif
-	ARM_VECTORS
+	ARM_VECTORS 	/*调用ARM_VECTORS设置中断向量异常表*/
 #endif /* !defined(CONFIG_ENABLE_ARM_SOC_BOOT0_HOOK) */
 
 /*
@@ -94,7 +102,8 @@ _start:
  * Indirect vectors table
  *
  * Symbols referenced here must be defined somewhere else
- *
+ * 间接向量表，此处引用的符号必须在其他位置定义
+ * reset定义在文件arch/arm/cpu/armv7/start.S中
  *************************************************************************
  */
 
@@ -119,6 +128,8 @@ _irq:			.word irq
 _fiq:			.word fiq
 
 	.balignl 16,0xdeadbeef
+	/*.balignl 16,0xdeadbeef 表示下面的代码开始16字节对齐，即当上段的代码运行完后不是16字节对齐，
+	就填充0xdeadbeef，直到使下段的代码开始处16字节对齐。*/
 
 /*
  *************************************************************************
@@ -128,7 +139,7 @@ _fiq:			.word fiq
  *************************************************************************
  */
 
-/* SPL interrupt handling: just hang */
+/* SPL interrupt handling: just hang  在SPL过程中发生异常挂起*/
 
 #ifdef CONFIG_SPL_BUILD
 
@@ -141,11 +152,13 @@ not_used:
 irq:
 fiq:
 1:
-	b	1b			/* hang and never return */
+	b	1b			/* hang and never return 挂起并永远不返回*/
 
 #else	/* !CONFIG_SPL_BUILD */
 
-/* IRQ stack memory (calculated at run-time) + 8 bytes */
+/* IRQ stack memory (calculated at run-time) + 8 bytes 
+ *不能确定堆栈指针地址，所以填充无效数字0x0badc0de，当堆栈指针确定以后，将其加8填充到这里
+ */
 .globl IRQ_STACK_START_IN
 IRQ_STACK_START_IN:
 #ifdef IRAM_BASE_ADDR
@@ -153,6 +166,12 @@ IRQ_STACK_START_IN:
 #else
 	.word	0x0badc0de
 #endif
+
+
+/*
+ *下面是异常处理，通过bl调用相应的异常处理函数，如bl do_irq
+ *会调用到do_irq()函数
+ */
 
 @
 @ IRQ stack frame.

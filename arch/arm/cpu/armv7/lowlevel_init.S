@@ -24,6 +24,7 @@ ENDPROC(s_init)
 WEAK(lowlevel_init)
 	/*
 	 * Setup a temporary stack. Global data is not available yet.
+	 * 为调用c函数准备一个临时堆栈而已，这个堆栈在cpu的片上内存！
 	 */
 #if defined(CONFIG_SPL_BUILD) && defined(CONFIG_SPL_STACK)
 	ldr	sp, =CONFIG_SPL_STACK
@@ -49,7 +50,7 @@ WEAK(lowlevel_init)
 	/*
 	 * Save the old lr(passed in ip) and the current lr to stack
 	 */
-	push	{ip, lr}
+	push	{ip, lr} 	/*将ip和lr寄存器压入堆栈保存*/
 
 	/*
 	 * Call the very early init function. This should do only the
@@ -64,7 +65,7 @@ WEAK(lowlevel_init)
 	 * this init in the SPL board_init_f() function which is called
 	 * immediately after this.
 	 */
-	bl	s_init
-	pop	{ip, pc}
+	bl	s_init 	/*针对相应的平台设置系统时钟，mux及内存等，这是c函数，结合cpu的datasheet阅读即可*/
+	pop	{ip, pc} 	/*将ip和lr寄存器从堆栈弹出*/
 ENDPROC(lowlevel_init)
 .popsection

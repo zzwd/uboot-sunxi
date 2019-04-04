@@ -7,7 +7,9 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/tzpc.h>
 
-/* Configure Trust Zone Protection Controller */
+/* Configure Trust Zone Protection Controller 
+ *配置Trust区域保护控制器
+ */
 void tzpc_init(void)
 {
 	struct sunxi_tzpc *tzpc = (struct sunxi_tzpc *)SUNXI_TZPC_BASE;
@@ -18,7 +20,9 @@ void tzpc_init(void)
 #endif
 
 #ifdef CONFIG_MACH_SUN8I_H3
-	/* Enable non-secure access to all peripherals */
+	/* Enable non-secure access to all peripherals 
+	 * 启用对所有外围设备的非安全访问
+	 */
 	writel(SUN8I_H3_TZPC_DECPORT0_ALL, &tzpc->decport0_set);
 	writel(SUN8I_H3_TZPC_DECPORT1_ALL, &tzpc->decport1_set);
 	writel(SUN8I_H3_TZPC_DECPORT2_ALL, &tzpc->decport2_set);

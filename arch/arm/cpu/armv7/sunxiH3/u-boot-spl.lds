@@ -25,7 +25,7 @@ SECTIONS
 {
 	.text      :
 	{
-		__image_copy_start = .;  	/*映像文件复制起始地址*/
+		__start = .;  	/*映像文件复制起始地址*/
 		*(.vectors)		/*代码段执行的第一个文件arch/arm/lib/vectors.S，该文件包含执行入口_start标志*/
 		arch/arm/cpu/armv7/start.o	(.text) /*接着执行arch/arm/cpu/armv7/start.S文件*/
 		*(.text*)

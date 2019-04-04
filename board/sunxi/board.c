@@ -665,7 +665,7 @@ void sunxi_board_init(void)
 #endif
 #endif
 	printf("DRAM:");
-	gd->ram_size = sunxi_dram_init();
+	gd->ram_size = sunxi_dram_init();	/*sdram内存初始化*/
 	printf(" %d MiB\n", (int)(gd->ram_size >> 20));
 	if (!gd->ram_size)
 		hang();
@@ -677,7 +677,7 @@ void sunxi_board_init(void)
 	 * assured it's being powered with suitable core voltage
 	 */
 	if (!power_failed)
-		clock_set_pll1(CONFIG_SYS_CLK_FREQ);
+		clock_set_pll1(CONFIG_SYS_CLK_FREQ); 	/*设置时钟频率*/
 	else
 		printf("Failed to set core voltage! Can't set CPU frequency\n");
 }

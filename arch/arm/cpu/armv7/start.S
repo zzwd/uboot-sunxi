@@ -49,7 +49,7 @@ save_boot_params_ret:
 /*
  * check for Hypervisor support
  * 在某些SoC上，无法直接从u-boot 启用管理程序模式，因为ROM代码在跳转到引导加载程序后将芯片置于管理程序模式。
- * 因此，引入了一个弱函数，可以根据SoC类型覆盖，并以自定义方式切换到管理程序模式。switch_to_hypervisor为弱引用，这里直接返回*/
+ * 因此，引入了一个弱函数，可以根据SoC类型覆盖，并以自定义方式切换到管理程序模式。switch_to_hypervisor为弱引用，这里直接返回
  */
 	mrc	p15, 0, r0, c0, c1, 1		@ read ID_PFR1
 	and	r0, r0, #CPUID_ARM_VIRT_MASK	@ mask virtualization bits

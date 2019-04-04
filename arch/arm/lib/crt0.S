@@ -65,8 +65,13 @@ ENTRY(_main)
 
 /*
  * Set up initial C runtime environment and call board_init_f(0).
+ * 设置C语言运行环境，并调用board_init_f(0)
  */
-
+/*
+这里首先为调用board_init_f准备一个临时堆栈，CONFIG_SYS_INIT_SP_ADDR这个宏就是cpu片上内存的高地址（片上内存的大小减去GD_SIZE）。
+然后将堆栈初始的地址保存在r9，所以r9就是gd的起始地址，后面需要靠r9访问gd的成员。
+然后将r0赋值成0，r0就是要调用的board_init_f函数的第一个参数！
+*/
 #if defined(CONFIG_SPL_BUILD) && defined(CONFIG_SPL_STACK)
 	ldr	r0, =(CONFIG_SPL_STACK)
 #else
@@ -104,7 +109,7 @@ ENTRY(_main)
 	orr	lr, #1				/* As required by Thumb-only */
 #endif
 	ldr	r0, [r9, #GD_RELOCADDR]		/* r0 = gd->relocaddr */
-	b	relocate_code
+	b	relocate_code 	/*调用relocate_code实现代码重定向，relocate_code函数在arch/arm/lib/relocate_code.S中*/
 here:
 /*
  * now relocate vectors
@@ -113,9 +118,15 @@ here:
 	bl	relocate_vectors
 
 /* Set up final (full) environment */
+/*
+*relocate完成后，uboot的代码被搬到了内存的顶部，所以必须重新设置异常向量表的
+*地址，c_runtime_cpu_setup这个函数的主要功能就是重新设置异常向量表的地址。
+*/
 
 	bl	c_runtime_cpu_setup	/* we still call old routine here */
 #endif
+
+
 #if !defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_FRAMEWORK)
 # ifdef CONFIG_SPL_BUILD
 	/* Use a DRAM stack for the rest of SPL, if requested */
@@ -135,7 +146,9 @@ here:
 #else
 	ldr	r1, =__bss_end		/* this is auto-relocated! */
 	mov	r2, #0x00000000		/* prepare zero to clear BSS */
-
+/*
+*清空bss段。
+*/
 clbss_l:cmp	r0, r1			/* while not at end of BSS */
 	strlo	r2, [r0]		/* clear 32-bit BSS word */
 	addlo	r0, r0, #4		/* move to next */
@@ -146,6 +159,10 @@ clbss_l:cmp	r0, r1			/* while not at end of BSS */
 	bl coloured_LED_init
 	bl red_led_on
 #endif
+
+/*
+*将relocate后的gd的地址保存到r1，然后调用board_init_r函数，进入uboot的新天地！
+*/
 	/* call board_init_r(gd_t *id, ulong dest_addr) */
 	mov     r0, r9                  /* gd_t */
 	ldr	r1, [r9, #GD_RELOCADDR]	/* dest_addr */
@@ -154,7 +171,7 @@ clbss_l:cmp	r0, r1			/* while not at end of BSS */
 	ldr	lr, =board_init_r	/* this is auto-relocated! */
 	bx	lr
 #else
-	ldr	pc, =board_init_r	/* this is auto-relocated! */
+	ldr	pc, =board_init_r	/* this is auto-relocated! 这里跳转后不返回，直接在DRAM中执行uboot*/
 #endif
 	/* we should not return here. */
 #endif

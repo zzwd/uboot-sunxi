@@ -160,6 +160,7 @@ void s_init(void)
 	 * Undocumented magic taken from boot0, without this DRAM
 	 * access gets messed up (seems cache related).
 	 * The boot0 sources describe this as: "config ema for cache sram"
+	 * 读取sram的Version Register寄存器信息
 	 */
 #if defined CONFIG_MACH_SUN6I
 	setbits_le32(SUNXI_SRAMC_BASE + 0x44, 0x1800);
@@ -190,7 +191,9 @@ void s_init(void)
 #endif
 
 #if !defined(CONFIG_ARM_CORTEX_CPU_IS_UP) && !defined(CONFIG_ARM64)
-	/* Enable SMP mode for CPU0, by setting bit 6 of Auxiliary Ctl reg */
+	/* Enable SMP mode for CPU0, by setting bit 6 of Auxiliary Ctl reg
+	 * 通过设置辅助Ctl寄存器的第6位，为CPU0提供SMP模式
+	 */
 	asm volatile(
 		"mrc p15, 0, r0, c1, c0, 1\n"
 		"orr r0, r0, #1 << 6\n"
@@ -199,16 +202,16 @@ void s_init(void)
 #endif
 #if defined CONFIG_MACH_SUN6I || defined CONFIG_MACH_SUN8I_H3
 	/* Enable non-secure access to some peripherals */
-	tzpc_init();
+	tzpc_init(); /*启用对所有外围设备的非安全访问*/
 #endif
 
-	clock_init();
-	timer_init();
-	gpio_init();
+	clock_init();   /*初始化时钟*/
+	timer_init();   /*初始化定时器*/
+	gpio_init(); 	/*初始化GPIO*/
 #ifndef CONFIG_DM_I2C
-	i2c_init_board();
+	i2c_init_board(); 	/*初始化i2c*/
 #endif
-	eth_init_board();
+	eth_init_board(); 	/*初始化eth*/
 }
 
 /* The sunxi internal brom will try to loader external bootloader
@@ -261,14 +264,14 @@ u32 spl_boot_device(void)
 
 void board_init_f(ulong dummy)
 {
-	spl_init();
-	preloader_console_init();
+	spl_init(); 	/*spl 初始化*/
+	preloader_console_init(); 	/*串口终端初始化*/
 
 #ifdef CONFIG_SPL_I2C_SUPPORT
 	/* Needed early by sunxi_board_init if PMU is enabled */
-	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE); /*i2c初始化*/
 #endif
-	sunxi_board_init();
+	sunxi_board_init(); 	/*sunxi板级初始化，包括初始化SDRAM和设置时钟频率*/
 }
 #endif
 

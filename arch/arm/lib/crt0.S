@@ -94,6 +94,8 @@ ENTRY(_main)
  * Set up intermediate environment (new sp and gd) and call
  * relocate_code(addr_moni). Trick here is that we'll return
  * 'here' but relocated.
+ * 这部分代码是uboot官方做好的，我们并不需要修改。它的作用就是把uboot从当前的位置(destA)拷贝到内存的高端地址(destB)上。
+ * Linux内核一般用的低端的内存地址，所以uboot选了一个高端地址,在解压linux内核时不会覆盖uboot
  */
 
 	ldr	r0, [r9, #GD_START_ADDR_SP]	/* sp = gd->start_addr_sp */
@@ -161,7 +163,7 @@ clbss_l:cmp	r0, r1			/* while not at end of BSS */
 #endif
 
 /*
-*将relocate后的gd的地址保存到r1，然后调用board_init_r函数，进入uboot的新天地！
+*将relocate后的gd的地址保存到r1，然后调用board_init_r函数
 */
 	/* call board_init_r(gd_t *id, ulong dest_addr) */
 	mov     r0, r9                  /* gd_t */
@@ -169,9 +171,9 @@ clbss_l:cmp	r0, r1			/* while not at end of BSS */
 	/* call board_init_r */
 #if CONFIG_IS_ENABLED(SYS_THUMB_BUILD)
 	ldr	lr, =board_init_r	/* this is auto-relocated! */
-	bx	lr
+	bx	lr 					/*跳转到lr中存放的地址处*/
 #else
-	ldr	pc, =board_init_r	/* this is auto-relocated! 这里跳转后不返回，直接在DRAM中执行uboot*/
+	ldr	pc, =board_init_r	/* this is auto-relocated! */
 #endif
 	/* we should not return here. */
 #endif

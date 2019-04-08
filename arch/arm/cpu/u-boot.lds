@@ -9,9 +9,9 @@
 #include <config.h>
 #include <asm/psci.h>
 
-OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
-OUTPUT_ARCH(arm)
-ENTRY(_start)
+OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")#指定输出可执行文件是elf格式,32位ARM指令,小端
+OUTPUT_ARCH(arm) 	#指定输出可执行文件的平台为ARM
+ENTRY(_start)		#指定输出可执行文件第一个执行函数为_start
 SECTIONS
 {
 #ifndef CONFIG_CMDLINE
@@ -35,14 +35,14 @@ SECTIONS
 	 */
 	/DISCARD/ : { *(.rel._secure*) }
 #endif
-	. = 0x00000000;
+	. = 0x00000000; 	#0x0开始
 
-	. = ALIGN(4);
+	. = ALIGN(4); 		#代码以4字节对齐
 	.text :
 	{
 		*(.__image_copy_start)
-		*(.vectors)
-		CPUDIR/start.o (.text*)
+		*(.vectors) 			#执行arch/arm/lib/vectors.S文件，该文件主要为设置异常向量表
+		CPUDIR/start.o (.text*)	#执行arch/arm/cpu/armv7/start.S文件
 	}
 
 	/* This needs to come before *(.text*) */

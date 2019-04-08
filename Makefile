@@ -1639,6 +1639,7 @@ cmd_cpp_lds = $(CPP) -Wp,-MD,$(depfile) $(cpp_flags) $(LDPPFLAGS) \
 		-D__ASSEMBLY__ -x assembler-with-cpp -std=c99 -P -o $@ $<
 
 u-boot.lds: $(LDSCRIPT) prepare FORCE
+	@echo "u-boot.lds ======" $(LDSCRIPT)	#打印u-boot.lds路径
 	$(call if_changed_dep,cpp_lds)
 
 spl/u-boot-spl.bin: spl/u-boot-spl
@@ -1647,6 +1648,7 @@ spl/u-boot-spl: tools prepare \
 		$(if $(CONFIG_OF_SEPARATE)$(CONFIG_OF_EMBED)$(CONFIG_SPL_OF_PLATDATA),dts/dt.dtb) \
 		$(if $(CONFIG_OF_SEPARATE)$(CONFIG_OF_EMBED)$(CONFIG_TPL_OF_PLATDATA),dts/dt.dtb)
 	$(Q)$(MAKE) obj=spl -f $(srctree)/scripts/Makefile.spl all
+	@## -f $(srctree)/scripts/Makefile.spl 说明执行的Makefile文件是scripts/Makefile.spl
 
 spl/sunxi-spl.bin: spl/u-boot-spl
 	@:

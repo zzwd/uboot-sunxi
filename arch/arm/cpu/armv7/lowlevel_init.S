@@ -38,6 +38,7 @@ WEAK(lowlevel_init)
 	/*
 	 * Set up global data for boards that still need it. This will be
 	 * removed soon.
+	 * 设置全局数据global data
 	 */
 #ifdef CONFIG_SPL_BUILD
 	ldr	r9, =gdata
